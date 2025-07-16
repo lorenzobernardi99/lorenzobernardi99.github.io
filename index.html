@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <title>Allitude - Calcolo orario uscita</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 480px;
+      margin: 40px auto;
+      padding: 20px;
+      border-radius: 12px;
+      background-color: #f4f4f4;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    label {
+      display: block;
+      margin: 10px 0 5px;
+    }
+    input, select, button {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 15px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 1rem;
+    }
+    button {
+      background-color: #4CAF50;
+      color: white;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    #risultato {
+      font-weight: bold;
+      text-align: center;
+      margin-top: 20px;
+      font-size: 1.1rem;
+      color: #333;
+    }
+    .errore {
+      color: red;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+<img src="allitude.png" alt="allitude logo" align="center" height="150px">
+  <h2>Calcolo Orario di Uscita</h2>
+
+  <label for="giorno">Giorno della settimana</label>
+  <select id="giorno">
+    <option>Lunedì</option>
+    <option>Martedì</option>
+    <option>Mercoledì</option>
+    <option>Giovedì</option>
+    <option>Venerdì</option>
+  </select>
+
+  <label for="ingresso">Orario di ingresso</label>
+  <input type="time" id="ingresso">
+
+  <label for="pausaInizio">Inizio pausa pranzo</label>
+  <input type="time" id="pausaInizio">
+
+  <label for="pausaFine">Fine pausa pranzo</label>
+  <input type="time" id="pausaFine">
+
+  <button onclick="calcolaUscita()">Calcola uscita</button>
+
+  <div id="risultato"></div>
+  
+  <h5>© BernardiSystemHR 2025</h5>
+
+
+  <script>
+    function toDate(timeStr) {
+      const [h, m] = timeStr.split(':').map(Number);
+      return new Date(0, 0, 0, h, m);
+    }
+
+    function isInRange(date, startStr, endStr) {
+      const start = toDate(startStr);
+      const end = toDate(endStr);
+      return date >= start && date <= end;
+    }
+
+    function calcolaUscita() {
+      const giorno = document.getElementById('giorno').value.toLowerCase();
+      const ingressoVal = document.getElementById('ingresso').value;
+      const pausaInizioVal = document.getElementById('pausaInizio').value;
+      const pausaFineVal = document.getElementById('pausaFine').value;
+      const risultato = document.getElementById('risultato');
+
+      risultato.classList.remove('errore');
+      risultato.textContent = '';
+
+      if (!ingressoVal || !pausaInizioVal || !pausaFineVal) {
+        risultato.textContent = "⚠️ Inserisci tutti gli orari.";
+        risultato.classList.add('errore');
+        return;
+      }
+
+      const ingresso = toDate(ingressoVal);
+      const pausaInizio = toDate(pausaInizioVal);
+      const pausaFine = toDate(pausaFineVal);
+
+      if (!isInRange(ingresso, "08:00", "09:00")) {
+        risultato.textContent = "⚠️ L'ingresso deve essere tra le 08:00 e le 09:00.";
+        risultato.classList.add('errore');
+        return;
+      }
+
+      if (!isInRange(pausaInizio, "13:00", "14:30") || !isInRange(pausaFine, "13:00", "15:00")) {
+        risultato.textContent = "⚠️ La pausa pranzo deve essere tra le 13:00 e le 15:00.";
+        risultato.classList.add('errore');
+        return;
+      }
+
+      if (pausaInizio >= pausaFine) {
+        risultato.textContent = "⚠️ L'inizio della pausa deve essere prima della fine.";
+        risultato.classList.add('errore');
+        return;
+      }
+
+      const durataPausa = pausaFine - pausaInizio;
+
+      const oreLavoroMs = (giorno === "venerdì" || giorno === "venerdi") ?
+        7 * 60 * 60 * 1000 :
+        (7 * 60 + 30) * 60 * 1000;
+
+      const uscita = new Date(ingresso.getTime() + durataPausa + oreLavoroMs);
+
+      // Verifica se copre le fasce obbligatorie
+      const presenzaObbligatoriaInizioMattina = toDate("09:00");
+      const presenzaObbligatoriaFineMattina = toDate("13:00");
+      const presenzaObbligatoriaInizioPome = toDate("15:00");
+      const presenzaObbligatoriaFinePome = toDate("16:30");
+
+      if (ingresso > presenzaObbligatoriaInizioMattina) {
+        risultato.textContent = "⚠️ Devi garantire presenza tra 09:00–13:00 e 15:00–16:30.";
+        risultato.classList.add('errore');
+        return;
+      }
+	  
+	  const ore = uscita.getHours().toString().padStart(2, '0');
+      const minuti = uscita.getMinutes().toString().padStart(2, '0');
+	  
+	  if (uscita < presenzaObbligatoriaFinePome) {
+        risultato.textContent = `✅ Puoi uscire alle: 16:30`;
+        risultato.classList.add('errore');
+        return;
+      }
+
+      risultato.textContent = `✅ Puoi uscire alle: ${ore}:${minuti}`;
+    }
+  </script>
+
+</body>
+</html>
