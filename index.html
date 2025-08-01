@@ -47,7 +47,7 @@
   </style>
 </head>
 <body>
-<img src="noBank.png" alt="allitude logo" align="center" height="75px">
+  <img src="noBank.png" alt="allitude logo" align="center" height="75px">
   <h2>Calcolo Orario di Uscita</h2>
 
   <label for="giorno">Giorno della settimana</label>
@@ -100,15 +100,18 @@
         return;
       }
 
-      const ingresso = toDate(ingressoVal);
-      const pausaInizio = toDate(pausaInizioVal);
-      const pausaFine = toDate(pausaFineVal);
-
-      if (!isInRange(ingresso, "08:00", "09:00")) {
+      // Converte l'orario di ingresso in Date e lo "forza" ad almeno 08:00
+      let ingresso = toDate(ingressoVal);
+      if (ingresso < toDate("08:00")) {
+        ingresso = toDate("08:00");
+      } else if (ingresso > toDate("09:00")) {
         risultato.textContent = "⚠️ L'ingresso deve essere tra le 08:00 e le 09:00.";
         risultato.classList.add('errore');
         return;
       }
+
+      const pausaInizio = toDate(pausaInizioVal);
+      const pausaFine = toDate(pausaFineVal);
 
       if (!isInRange(pausaInizio, "13:00", "14:30") || !isInRange(pausaFine, "13:00", "15:00")) {
         risultato.textContent = "⚠️ La pausa pranzo deve essere tra le 13:00 e le 15:00.";
@@ -142,10 +145,10 @@
         return;
       }
 	  
-	  const ore = uscita.getHours().toString().padStart(2, '0');
+      const ore = uscita.getHours().toString().padStart(2, '0');
       const minuti = uscita.getMinutes().toString().padStart(2, '0');
 	  
-	  if (uscita < presenzaObbligatoriaFinePome) {
+      if (uscita < presenzaObbligatoriaFinePome) {
         risultato.textContent = `✅ Puoi uscire alle: 16:30`;
         risultato.classList.add('errore');
         return;
