@@ -72,17 +72,33 @@
 
   <div id="risultato"></div>
 
-  <script>
-    function toDate(timeStr) {
-      const [h, m] = timeStr.split(':').map(Number);
-      return new Date(0, 0, 0, h, m);
-    }
+ <script>
+  function toDate(timeStr) {
+    const [h, m] = timeStr.split(':').map(Number);
+    return new Date(0, 0, 0, h, m);
+  }
 
-    function isInRange(date, startStr, endStr) {
-      const start = toDate(startStr);
-      const end = toDate(endStr);
-      return date >= start && date <= end;
+  function isInRange(date, startStr, endStr) {
+    const start = toDate(startStr);
+    const end = toDate(endStr);
+    return date >= start && date <= end;
+  }
+
+	// Prevalorizza il giorno della settimana con quello di oggi
+  (function impostaGiornoCorrente() {
+    const giorni = ["domenica", "lunedì", "martedì", "mercoledì", "giovedì", "venerdì", "sabato"];
+    const oggi = new Date();
+    const giornoOggi = giorni[oggi.getDay()];
+    const selectGiorno = document.getElementById('giorno');
+
+    for (let i = 0; i < selectGiorno.options.length; i++) {
+      if (selectGiorno.options[i].text.toLowerCase() === giornoOggi) {
+        selectGiorno.selectedIndex = i;
+        break;
+      }
     }
+  })();
+
 
     function calcolaUscita() {
       const giorno = document.getElementById('giorno').value.toLowerCase();
